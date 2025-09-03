@@ -28,8 +28,7 @@ class LiarLoader(FakeNewsDataset):
         self.dataset = datasets.load_dataset("ucsbnlp/liar", split=split)
         self.statements = self.dataset["statement"]
         self.labels = self.dataset["label"]
-        
-        # Create a dictionary of all metadata features (excluding statement and label)
+      
         excluded_features = ["statement", "label"]
         self.metadata = {
             feature: self.dataset[feature]

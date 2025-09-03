@@ -1,0 +1,8 @@
+datasets==3.6.0
+langchain==0.3.27
+langchain_chroma==0.2.5
+langchain_community==0.3.29
+langchain_huggingface==0.3.1
+langchain_text_splitters==0.3.11
+sentence_transformers==5.1.0
+transformers==4.56.0
