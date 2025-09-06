@@ -20,7 +20,6 @@ class VectorstoreBuilder:
         self.docs_path = settings.docs_path
         self.chunk_size = settings.chunk_size
         self.chunk_overlap = settings.chunk_overlap
-        
 
     def build_vectorstore(self) -> None:
         """Build and populate the vectorstore with documents from the specified directory."""
@@ -32,6 +31,7 @@ class VectorstoreBuilder:
 
         Returns:
             list: List of split documents.
+
         """
         splits = []
         doc_paths = self._get_docs_filepaths()
@@ -47,6 +47,7 @@ class VectorstoreBuilder:
 
         Returns:
             list: List of file paths.
+
         """
         docs_paths = []
         for filename in os.listdir(self.docs_path):
