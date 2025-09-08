@@ -4,7 +4,7 @@ from collections.abc import Generator
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, trim_messages
-from langchain_core.runnables import RunnableConfig
+from langchain_core.runnables import RunnableConfig, RunnableSequence
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, MessagesState, StateGraph
 from langgraph.graph.state import CompiledStateGraph
@@ -43,9 +43,8 @@ class Chatbot:
         self.app = self._initialize_workflow()
 
     def _call_model(self, state: MessagesState) -> dict:
-        state["messages"] = self.trimmer.invoke(state["messages"])
-        prompt = self.prompt.invoke(state)
-        response = self.model.invoke(prompt)
+        chain: RunnableSequence = self.trimmer | self.prompt | self.model
+        response = chain.invoke(state["messages"])
         return {"messages": response}
 
     def _initialize_workflow(self) -> CompiledStateGraph:
