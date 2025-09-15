@@ -7,7 +7,7 @@ from agents.chatbot.bot import Chatbot
 from agents.chatbot.llms.anthropic import AnthropicLLM
 from agents.chatbot.llms.google import GoogleLLM
 from agents.chatbot.llms.openai import OpenAILLM
-from agents.chatbot.llms.prompts import get_detector_prompt
+from agents.chatbot.llms.promps.prompts import get_detector_prompt
 
 load_dotenv(override=True)
 
