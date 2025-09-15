@@ -9,7 +9,7 @@ class GoogleLLM(LLM):
     """Wrapper around Google LLM for generating responses."""
 
     @classmethod
-    def get_chat_model(cls, model_name: str = "gemini-2.5-flash") -> ChatGoogleGenerativeAI:
+    def get_chat_model(cls, model_name: str = "gemini-2.5-pro") -> ChatGoogleGenerativeAI:
         """Get the Google chat model instance."""
         if "GOOGLE_API_KEY" not in os.environ:
             msg = "GOOGLE_API_KEY environment variable not set."
