@@ -1,22 +1,28 @@
+from __future__ import annotations
+
 from collections.abc import Generator
 
 from dotenv import load_dotenv
 from langchain_core.language_models import BaseChatModel
+from pydantic import BaseModel
 
 from agents.chatbot.bot import Chatbot
 from agents.chatbot.llms.anthropic import AnthropicLLM
 from agents.chatbot.llms.google import GoogleLLM
 from agents.chatbot.llms.openai import OpenAILLM
-from agents.chatbot.llms.promps.prompts import get_detector_prompt
+from agents.chatbot.llms.prompts.prompts import get_detector_prompt
+from agents.models.detector_model import DetectorModel
 
 load_dotenv(override=True)
 
-
-def create_chatbot(provider: str) -> Chatbot:
+def create_chatbot(provider: str, schema: type[BaseModel] | None =
+                   DetectorModel) -> Chatbot:
     """Create and return a Chatbot instance.
 
     Args:
         provider (str): The model provider (e.g., "OpenAI", "Anthropic", "Gemini").
+        schema (BaseModel | None): Optional Pydantic schema for structured output.
+        Defaults to DetectorModel. If None, no schema is used.
 
     Returns:
         Chatbot: An instance of the Chatbot class configured
@@ -24,7 +30,7 @@ def create_chatbot(provider: str) -> Chatbot:
 
     """
     model = _choose_provider(provider)
-    return Chatbot(model=model, prompt=get_detector_prompt())
+    return Chatbot(model=model, prompt=get_detector_prompt(), schema=schema)
 
 def _choose_provider(provider: str) -> BaseChatModel:
     """Choose the language model based on the provider.

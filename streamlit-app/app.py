@@ -21,8 +21,7 @@ if "provider" not in st.session_state:
     provider = st.radio("Select chat provider:", ["OpenAI", "Anthropic", "Gemini"])
     if st.button("Confirm"):
         st.session_state.provider = provider
-        print("Creating model with provider:", provider)
-        st.session_state.chatbot = create_chatbot(provider)
+        st.session_state.chatbot = create_chatbot(provider, schema=None)
         st.rerun()
 else:
     for message in st.session_state.messages:

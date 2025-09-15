@@ -1,13 +1,17 @@
+from __future__ import annotations
+
+import json
 import uuid
 from collections.abc import Generator
 
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import HumanMessage, trim_messages
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, trim_messages
 from langchain_core.runnables import RunnableConfig, RunnableSequence
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, MessagesState, StateGraph
 from langgraph.graph.state import CompiledStateGraph
+from pydantic import BaseModel
 
 
 class Chatbot:
@@ -17,25 +21,27 @@ class Chatbot:
         self,
         model: BaseChatModel,
         prompt: ChatPromptTemplate,
+        schema: type[BaseModel] | dict | None = None,
         id_: str = str(uuid.uuid4()),
     ) -> None:
         """Create a new chatbot instance.
 
         Args:
-            model (BaseChatModel): _language model to use for generating responses.
-            prompt (ChatPromptTemplate):_prompt template to use for generating responses.
-            id_ (str, optional): Id used to distinguish the conversations.
-            Defaults to str(uuid.uuid4()).
-
+            model (BaseChatModel): Language model to use for generating responses.
+            prompt (ChatPromptTemplate): Prompt template to use for generating responses.
+            schema (type[BaseModel] | dict | None): Optional Pydantic model class or JSON
+                schema dict to enable structured output.
+            id_ (str, optional): Id used to distinguish conversations. Defaults to a UUID.
         """
         self.model = model
+        self.schema = schema
         self.prompt = prompt
         self.config = RunnableConfig(configurable={"thread_id": id_})
         self.memory = MemorySaver()
         self.trimmer = trim_messages(
-            max_tokens=65,
+            max_tokens=20,
             strategy="last",
-            token_counter=model,
+            token_counter=len,
             include_system=True,
             allow_partial=False,
             start_on="human",
@@ -43,25 +49,42 @@ class Chatbot:
         self.app = self._initialize_workflow()
 
     def _call_model(self, state: MessagesState) -> dict:
-        chain: RunnableSequence = self.trimmer | self.prompt | self.model
+        if self.schema is not None:
+            chain: RunnableSequence = (
+                self.trimmer
+                | self.prompt
+                | self.model.with_structured_output(self.schema)
+            )
+            response = chain.invoke(state["messages"])
+            if isinstance(response, BaseModel):
+                content = response.model_dump_json()
+            elif isinstance(response, dict):
+                content = json.dumps(response)
+            else:
+                content = str(response)
+            ai_msg = AIMessage(content=content)
+            return {"messages": [ai_msg]}
+
+        chain = self.trimmer | self.prompt | self.model
         response = chain.invoke(state["messages"])
-        return {"messages": response}
+        if isinstance(response, list):
+            return {"messages": response}
+        return {"messages": [response]}
 
     def _initialize_workflow(self) -> CompiledStateGraph:
         workflow = StateGraph(state_schema=MessagesState)
-        workflow.add_edge(START, "model")
         workflow.add_node("model", self._call_model)
+        workflow.add_edge(START, "model")
         return workflow.compile(checkpointer=self.memory)
 
-    def chat(self, user_input: str) -> HumanMessage:
+    def chat(self, user_input: str) -> BaseMessage:
         """Generate a response from the chatbot.
 
         Args:
             user_input (str): The user's input message.
 
         Returns:
-            HumanMessage: The chatbot's response message.
-
+            BaseMessage: The chatbot's last response message.
         """
         input_message = [HumanMessage(user_input)]
         output = self.app.invoke({"messages": input_message}, self.config)
@@ -76,7 +99,6 @@ class Chatbot:
         Yields:
             Generator[str, None, None]: The chatbot's response message,
             one word at a time.
-
         """
         input_message = [HumanMessage(user_input)]
         for chunk, _ in self.app.stream(

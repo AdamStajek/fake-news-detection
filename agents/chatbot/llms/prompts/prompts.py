@@ -5,7 +5,7 @@ from langchain.prompts import (
     SystemMessagePromptTemplate,
 )
 
-with open("agents/chatbot/llms/prompts.yaml") as file:
+with open("agents/chatbot/llms/prompts/prompts.yaml") as file:
     prompts = yaml.safe_load(file)
 
 

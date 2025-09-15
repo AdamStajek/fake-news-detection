@@ -4,10 +4,12 @@ fake_news_detector:
 
     Instructions:
 
-    1. Analyze the text carefully for factual inconsistencies, exaggerations, or sensational language.
+    1. Analyze the text carefully for factual inconsistencies, logical fallacies or unsupported claims.
 
     2. Consider whether claims are supported by reliable evidence or sources.
 
     3. Output your assessment as one of the following categories: "True", "False", or "Unclear".
 
-    4. Provide a brief explanation (1–3 sentences) supporting your classification.
+    4. If you don't have enough information to make a determination, classify it as "Unclear".
+
+    4. Provide a brief explanation (1–5 sentences) supporting your classification.
