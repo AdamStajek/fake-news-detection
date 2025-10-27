@@ -11,9 +11,12 @@ from agents.chatbot.llms.anthropic import AnthropicLLM
 from agents.chatbot.llms.google import GoogleLLM
 from agents.chatbot.llms.openai import OpenAILLM
 from agents.chatbot.llms.prompts.prompts import get_detector_prompt
+from agents.logger.logger import get_logger
 from agents.models.detector_model import DetectorModel
 
 load_dotenv(override=True)
+
+logger = get_logger()
 
 def create_chatbot(provider: str, schema: type[BaseModel] | None =
                    DetectorModel) -> Chatbot:
@@ -29,6 +32,7 @@ def create_chatbot(provider: str, schema: type[BaseModel] | None =
         with the OpenAI model and detector prompt.
 
     """
+    logger.info(f"Creating chatbot with provider: {provider}")
     model = _choose_provider(provider)
     return Chatbot(model=model, prompt=get_detector_prompt(), schema=schema)
 

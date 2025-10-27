@@ -13,6 +13,10 @@ from langgraph.graph import START, MessagesState, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from pydantic import BaseModel
 
+from agents.logger.logger import get_logger
+
+logger = get_logger()
+
 
 class Chatbot:
     """A chatbot that uses a language model to generate responses."""
@@ -86,9 +90,12 @@ class Chatbot:
         Returns:
             BaseMessage: The chatbot's last response message.
         """
+        logger.info(f"User input: {user_input}")
         input_message = [HumanMessage(user_input)]
         output = self.app.invoke({"messages": input_message}, self.config)
-        return output["messages"][-1]
+        output = output["messages"][-1]
+        logger.info(f"Chatbot response: {output.content}")
+        return output
 
     def stream_chat(self, user_input: str) -> Generator[str, None, None]:
         """Generate a response from the chatbot word by word.
@@ -101,6 +108,8 @@ class Chatbot:
             one word at a time.
         """
         input_message = [HumanMessage(user_input)]
+        logger.info(f"User input: {user_input}")
+        logger.info("Streaming chatbot response...")
         for chunk, _ in self.app.stream(
             {"messages": input_message},
             self.config,

@@ -9,7 +9,7 @@ class OpenAILLM(LLM):
     """Wrapper around OpenAI LLM for generating responses."""
 
     @classmethod
-    def get_chat_model(cls, model_name: str = "gpt-5") -> ChatOpenAI:
+    def get_chat_model(cls, model_name: str = "gpt-4o-mini") -> ChatOpenAI:
         """Get the OpenAI chat model instance."""
         if "OPENAI_API_KEY" not in os.environ:
             msg = "OPENAI_API_KEY environment variable not set."
