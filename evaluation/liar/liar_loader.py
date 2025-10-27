@@ -31,8 +31,8 @@ class LiarLoader(FakeNewsDataset):
 
     def __init__(self, split: Literal["train", "test", "validation"] = "train") -> None:
         self.dataset: datasets.Dataset = datasets.load_dataset("ucsbnlp/liar", split=split)
-        self.statements = self.dataset["statement"]
-        self.labels = self.dataset["label"]
+        self.statements = self.dataset["statement"][:10]
+        self.labels = self.dataset["label"][:10]
 
         excluded_features = ["statement", "label"]
         self.metadata = {
@@ -58,7 +58,7 @@ class LiarLoader(FakeNewsDataset):
             int: Length of the dataset
 
         """
-        return len(self.dataset)
+        return len(self.statements)
 
     def __getitem__(self, idx: int) -> tuple[str, int]:
         """Get an item from the dataset.
