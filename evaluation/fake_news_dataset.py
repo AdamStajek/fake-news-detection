@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+from typing import Literal
+
+import pandas as pd
 
 
 class FakeNewsDataset(ABC):
@@ -34,4 +37,12 @@ class FakeNewsDataset(ABC):
         """
         msg = "You must implement the __getitem__ method!"
         raise NotImplementedError(msg)
+
+    def _split_dataset(self, dataset: pd.DataFrame, split:
+                       Literal["train", "validation"]) -> pd.DataFrame:
+        if split == "train":
+            dataset = dataset.iloc[:int(0.8 * len(dataset))]
+        elif split == "validation":
+            dataset = dataset.iloc[int(0.8 * len(dataset)):]
+        return dataset
 

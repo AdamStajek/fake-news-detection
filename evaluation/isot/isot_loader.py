@@ -31,7 +31,7 @@ class IsotLoader(FakeNewsDataset):
 
         Args:
             split (Literal["train", "validation"],
-            optional): _description_. Defaults to "train".
+            optional): A train or validation split for the dataset. Defaults to "train".
 
         """
         true_texts = pd.read_csv(TRUE_PATH)[["text"]]
@@ -46,14 +46,6 @@ class IsotLoader(FakeNewsDataset):
         true_texts["label"] = 1
         false_texts["label"] = 0
         return true_texts, false_texts
-
-    def _split_dataset(self, dataset: pd.DataFrame, split:
-                       Literal["train", "validation"]) -> pd.DataFrame:
-        if split == "train":
-            dataset = dataset.iloc[:int(0.8 * len(dataset))]
-        elif split == "validation":
-            dataset = dataset.iloc[int(0.8 * len(dataset)):]
-        return dataset
 
     def __len__(self) -> int:
         """Get the length of the dataset.
