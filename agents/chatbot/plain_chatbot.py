@@ -13,12 +13,13 @@ from langgraph.graph import START, MessagesState, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from pydantic import BaseModel
 
+from agents.chatbot.chatbot_interface import ChatbotInterface
 from agents.logger.logger import get_logger
 
 logger = get_logger()
 
 
-class Chatbot:
+class PlainChatbot(ChatbotInterface):
     """A chatbot that uses a language model to generate responses."""
 
     def __init__(
@@ -28,7 +29,7 @@ class Chatbot:
         schema: type[BaseModel] | dict | None = None,
         id_: str = str(uuid.uuid4()),
     ) -> None:
-        """Create a new chatbot instance.
+        """Create a new plain chatbot (without tools and rag) instance.
 
         Args:
             model (BaseChatModel): Language model to use for generating responses.
@@ -36,6 +37,7 @@ class Chatbot:
             schema (type[BaseModel] | dict | None): Optional Pydantic model class or JSON
                 schema dict to enable structured output.
             id_ (str, optional): Id used to distinguish conversations. Defaults to a UUID.
+
         """
         self.model = model
         self.schema = schema
@@ -89,12 +91,13 @@ class Chatbot:
 
         Returns:
             BaseMessage: The chatbot's last response message.
+
         """
         logger.info(f"User input: {user_input}")
         input_message = [HumanMessage(user_input)]
         output = self.app.invoke({"messages": input_message}, self.config)
         output = output["messages"][-1]
-        logger.info(f"Chatbot response: {output.content}")
+        logger.info(f"PlainChatbot response: {output.content}")
         return output
 
     def stream_chat(self, user_input: str) -> Generator[str, None, None]:
@@ -106,6 +109,7 @@ class Chatbot:
         Yields:
             Generator[str, None, None]: The chatbot's response message,
             one word at a time.
+
         """
         input_message = [HumanMessage(user_input)]
         logger.info(f"User input: {user_input}")

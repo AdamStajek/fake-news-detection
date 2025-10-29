@@ -6,11 +6,11 @@ from dotenv import load_dotenv
 from langchain_core.language_models import BaseChatModel
 from pydantic import BaseModel
 
-from agents.chatbot.bot import Chatbot
 from agents.chatbot.llms.anthropic import AnthropicLLM
 from agents.chatbot.llms.google import GoogleLLM
 from agents.chatbot.llms.openai import OpenAILLM
 from agents.chatbot.llms.prompts.prompts import get_detector_prompt
+from agents.chatbot.plain_chatbot import PlainChatbot
 from agents.logger.logger import get_logger
 from agents.models.detector_model import DetectorModel
 
@@ -19,8 +19,8 @@ load_dotenv(override=True)
 logger = get_logger()
 
 def create_chatbot(provider: str, schema: type[BaseModel] | None =
-                   DetectorModel) -> Chatbot:
-    """Create and return a Chatbot instance.
+                   DetectorModel) -> PlainChatbot:
+    """Create and return a PlainChatbot instance.
 
     Args:
         provider (str): The model provider (e.g., "OpenAI", "Anthropic", "Gemini").
@@ -28,13 +28,13 @@ def create_chatbot(provider: str, schema: type[BaseModel] | None =
         Defaults to DetectorModel. If None, no schema is used.
 
     Returns:
-        Chatbot: An instance of the Chatbot class configured
+        PlainChatbot: An instance of the PlainChatbot class configured
         with the OpenAI model and detector prompt.
 
     """
     logger.info(f"Creating chatbot with provider: {provider}")
     model = _choose_provider(provider)
-    return Chatbot(model=model, prompt=get_detector_prompt(), schema=schema)
+    return PlainChatbot(model=model, prompt=get_detector_prompt(), schema=schema)
 
 def _choose_provider(provider: str) -> BaseChatModel:
     """Choose the language model based on the provider.
@@ -59,11 +59,11 @@ def _choose_provider(provider: str) -> BaseChatModel:
     raise ValueError(msg)
 
 
-def get_response(chatbot: Chatbot, user_input: str) -> str:
+def get_response(chatbot: PlainChatbot, user_input: str) -> str:
     """Get a response from the chatbot for the given user input.
 
     Args:
-        chatbot (Chatbot): The Chatbot instance to use for generating the response.
+        chatbot (PlainChatbot): The PlainChatbot instance to use for generating the response.
         user_input (str): The input message from the user.
 
     Returns:
@@ -74,11 +74,11 @@ def get_response(chatbot: Chatbot, user_input: str) -> str:
     return response.content
 
 
-def stream_response(chatbot: Chatbot, user_input: str) -> Generator[str, None, None]:
+def stream_response(chatbot: PlainChatbot, user_input: str) -> Generator[str, None, None]:
     """Stream the response from the chatbot word by word.
 
     Args:
-        chatbot (Chatbot): The Chatbot instance to use for generating the response.
+        chatbot (PlainChatbot): The PlainChatbot instance to use for generating the response.
         user_input (str): The input message from the user.
 
     Yields:

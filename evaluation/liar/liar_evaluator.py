@@ -1,7 +1,7 @@
 import json
 
 from agents.agent_api import get_response
-from agents.chatbot.bot import Chatbot
+from agents.chatbot.plain_chatbot import Chatbot
 from evaluation.evaluator import Evaluator
 from evaluation.liar.liar_loader import LiarLoader
 

@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 
+
 class DetectorModel(BaseModel):
     """A model for detecting fake news."""
 
