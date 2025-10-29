@@ -2,6 +2,7 @@
 ruff.toml
 *.csv
 *.json
+knowledge_base/data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
