@@ -14,4 +14,4 @@ class AnthropicLLM(LLM):
         if "ANTHROPIC_API_KEY" not in os.environ:
             msg = "ANTHROPIC_API_KEY environment variable not set."
             raise ValueError(msg)
-        return ChatAnthropic(model=model_name)
+        return ChatAnthropic(model_name=model_name, timeout=120, stop=["\n\nHuman:"])

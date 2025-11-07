@@ -1,5 +1,5 @@
 import yaml
-from langchain.prompts import (
+from langchain_core.prompts import (
     ChatPromptTemplate,
     MessagesPlaceholder,
     SystemMessagePromptTemplate,
@@ -19,3 +19,7 @@ def get_detector_prompt() -> ChatPromptTemplate:
             MessagesPlaceholder(variable_name="messages"),
         ],
     )
+
+def get_detector_prompt_as_str() -> str:
+    """Load and return the fake news detection prompt template as a string."""
+    return prompts["fake_news_detector"]["system"]

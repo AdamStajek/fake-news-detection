@@ -4,9 +4,9 @@ import json
 import uuid
 from collections.abc import Generator
 
-from langchain.prompts import ChatPromptTemplate
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, trim_messages
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig, RunnableSequence
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, MessagesState, StateGraph

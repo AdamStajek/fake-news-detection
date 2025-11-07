@@ -9,7 +9,7 @@ class OpenAIEmbeddingsWrapper(CustomEmbeddings):
     """Wrapper around OpenAI embeddings for embedding text."""
 
     @classmethod
-    def get_chat_model(cls, model_name: str =
+    def get_embedding_model(cls, model_name: str =
                        "text-embedding-3-small") -> OpenAIEmbeddings:
         """Get the OpenAI embedding model instance."""
         if "OPENAI_API_KEY" not in os.environ:

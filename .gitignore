@@ -3,6 +3,7 @@ ruff.toml
 *.csv
 *.json
 knowledge_base/data
+knowledge_base/vectorstore
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

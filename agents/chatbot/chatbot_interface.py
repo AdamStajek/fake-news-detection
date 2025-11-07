@@ -2,9 +2,9 @@ import uuid
 from abc import ABC, abstractmethod
 from collections.abc import Generator
 
-from langchain.prompts import ChatPromptTemplate
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import BaseMessage
+from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel
 
 
@@ -15,7 +15,7 @@ class ChatbotInterface(ABC):
     def __init__(
         self,
         model: BaseChatModel,
-        prompt: ChatPromptTemplate,
+        prompt: ChatPromptTemplate | str,
         schema: type[BaseModel] | dict | None = None,
         id_: str = str(uuid.uuid4()),
     ) -> None:

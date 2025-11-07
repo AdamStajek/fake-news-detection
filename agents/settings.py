@@ -5,8 +5,7 @@ from dataclasses import dataclass
 class Settings:
     """Configuration settings for the application."""
 
-    docs_path: str = "./docs"
-    vectorstore_path: str = "./vectorstore"
+    vectorstore_path: str = "./knowledge_base/vectorstore"
     vectorstore_col_name = "main"
     chunk_size: int = 512
     chunk_overlap: int = 64

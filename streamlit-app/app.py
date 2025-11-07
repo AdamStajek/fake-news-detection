@@ -12,6 +12,7 @@ def response_generator() -> Generator[str, None, None]:
     )
 
 
+
 st.title("Fake News Detector")
 
 if "messages" not in st.session_state:
@@ -21,7 +22,10 @@ if "provider" not in st.session_state:
     provider = st.radio("Select chat provider:", ["OpenAI", "Anthropic", "Gemini"])
     if st.button("Confirm"):
         st.session_state.provider = provider
-        st.session_state.chatbot = create_chatbot(provider, schema=None)
+        st.session_state.chatbot = create_chatbot("agent",
+                                                  provider,
+                                                  schema=None,
+                                                  vectorstore_collection_name="overall_covid_papers")
         st.rerun()
 else:
     for message in st.session_state.messages:
