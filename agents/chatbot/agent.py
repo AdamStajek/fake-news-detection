@@ -1,8 +1,10 @@
+import uuid
 from collections.abc import Generator
 
 from langchain.agents import create_agent
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import BaseMessage
+from langgraph.checkpoint.memory import InMemorySaver 
 from pydantic import BaseModel
 
 from agents.chatbot.chatbot_interface import ChatbotInterface
@@ -20,6 +22,7 @@ class AgentChatbot(ChatbotInterface):
         prompt: str,
         schema: BaseModel | None = None,
         tools: list = [],
+        id_: str = str(uuid.uuid4()),
     ) -> None:
        """Create a new chatbot instance.
 
@@ -36,7 +39,9 @@ class AgentChatbot(ChatbotInterface):
        self.agent = create_agent(model,
                                     system_prompt=prompt,
                                     tools=tools,
-                                    response_format=schema)
+                                    response_format=schema,
+                                    checkpointer=InMemorySaver())
+       self.id = id_
 
     def chat(self, user_input: str) -> BaseMessage:
         logger.info(f"User input: {user_input}")
@@ -62,6 +67,7 @@ class AgentChatbot(ChatbotInterface):
         """
         for step in self.agent.stream(
             {"messages": [{"role": "user", "content": user_input}]},
+            {"configurable": {"thread_id": self.id}},
             stream_mode="messages",
         ):
             logger.info(f"AgentChatbot streaming step: {step[0].content}")
