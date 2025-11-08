@@ -13,7 +13,7 @@ class MMCovidLoader(FakeNewsDataset):
     The MMCovid dataset contains claims about Covid19.
     """
 
-    def __init__(self, split: Literal["train", "validation"] = "train") -> None:
+    def __init__(self, n: int, split: Literal["train", "validation"] = "train") -> None:
         """Create an MMCovidLoader instance.
 
         Args:
@@ -22,6 +22,7 @@ class MMCovidLoader(FakeNewsDataset):
 
         """
         dataset = pd.read_csv(DATASET_PATH)[["claim", "label"]]
+        dataset = dataset[:n]
         self.dataset = self._split_dataset(dataset, split)
 
     def __len__(self) -> int:
@@ -33,7 +34,7 @@ class MMCovidLoader(FakeNewsDataset):
         """
         return len(self.dataset)
 
-    def __get_item__(self, idx: int) -> tuple[str, int]:
+    def __getitem__(self, idx: int) -> tuple[str, int]:
         """Get an item from the dataset by index.
 
         Args:

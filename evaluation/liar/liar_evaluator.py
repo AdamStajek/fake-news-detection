@@ -2,14 +2,14 @@ import json
 
 from agents.agent_api import get_response
 from agents.chatbot.chatbot_interface import ChatbotInterface
-from evaluation.evaluator import Evaluator
+from evaluation.evaluator_interface import EvaluatorInterface
 from evaluation.liar.liar_loader import LiarLoader
 
 
-class LiarEvaluator(Evaluator):
+class LiarEvaluator(EvaluatorInterface):
     """A class for the evaluation of a chatbot on the Liar Dataset."""
 
-    def __init__(self, chatbot: ChatbotInterface) -> None:
+    def __init__(self, chatbot: ChatbotInterface, n: int = 10) -> None:
         """Initialize the LiarEvaluator.
 
         Args:
@@ -17,7 +17,8 @@ class LiarEvaluator(Evaluator):
 
         """
         self.chatbot = chatbot
-        self.dataset = LiarLoader()
+        self.n = n
+        self.dataset = LiarLoader(n=n)
 
     def evaluate(self) -> dict:
         """Evaluate the chatbot on the Liar Dataset.

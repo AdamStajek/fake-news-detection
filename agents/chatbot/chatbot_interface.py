@@ -11,6 +11,8 @@ from pydantic import BaseModel
 class ChatbotInterface(ABC):
     """An abstract base class for chatbots."""
 
+    model: BaseChatModel
+
     @abstractmethod
     def __init__(
         self,

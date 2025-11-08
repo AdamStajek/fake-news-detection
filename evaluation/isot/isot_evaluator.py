@@ -1,14 +1,14 @@
 import json
-from evaluation.evaluator import Evaluator
+from evaluation.evaluator_interface import EvaluatorInterface
 from evaluation.isot.isot_loader import IsotLoader
 from agents.agent_api import get_response
 from agents.chatbot.chatbot_interface import ChatbotInterface
 
 
-class IsotEvaluator(Evaluator):
+class IsotEvaluator(EvaluatorInterface):
     """A class for the evaluation of a chatbot on the ISOT Dataset."""
     
-    def __init__(self, chatbot: ChatbotInterface) -> None:
+    def __init__(self, chatbot: ChatbotInterface, n: int = 10) -> None:
         """Initialize the IsotEvaluator.
 
         Args:
@@ -16,7 +16,7 @@ class IsotEvaluator(Evaluator):
 
         """
         self.chatbot = chatbot
-        self.dataset = IsotLoader()
+        self.dataset = IsotLoader(n)
 
     def evaluate(self) -> dict:
         """Evaluate the chatbot on the ISOT Dataset.

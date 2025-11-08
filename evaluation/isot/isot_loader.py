@@ -26,7 +26,7 @@ class IsotLoader(FakeNewsDataset):
 
     """
 
-    def __init__(self, split: Literal["train", "validation"] = "train") -> None:
+    def __init__(self, n: int, split: Literal["train", "validation"] = "train") -> None:
         """Create an ISOTLoader instance.
 
         Args:
@@ -34,8 +34,8 @@ class IsotLoader(FakeNewsDataset):
             optional): A train or validation split for the dataset. Defaults to "train".
 
         """
-        true_texts = pd.read_csv(TRUE_PATH)[["text"]]
-        false_texts = pd.read_csv(FAKE_PATH)[["text"]]
+        true_texts = pd.read_csv(TRUE_PATH)[["text"]][:n//2]
+        false_texts = pd.read_csv(FAKE_PATH)[["text"]][:n//2]
         true_texts, false_texts = self._append_with_label(true_texts, false_texts)
         dataset = pd.concat([true_texts, false_texts], ignore_index=True)
         dataset = dataset.sample(frac=1).reset_index(drop=True)

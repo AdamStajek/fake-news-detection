@@ -2,14 +2,14 @@ import json
 
 from agents.agent_api import get_response
 from agents.chatbot.chatbot_interface import ChatbotInterface
-from evaluation.evaluator import Evaluator
+from evaluation.evaluator_interface import EvaluatorInterface
 from evaluation.mmcovid.mmcovid_loader import MMCovidLoader
 
 
-class MMCovidEvaluator(Evaluator):
+class MMCovidEvaluator(EvaluatorInterface):
     """A class for the evaluation of a chatbot on the MMCovid Dataset."""
 
-    def __init__(self, chatbot: ChatbotInterface) -> None:
+    def __init__(self, chatbot: ChatbotInterface, n: int = 10) -> None:
         """Initialize the MMCovidEvaluator.
 
         Args:
@@ -17,7 +17,7 @@ class MMCovidEvaluator(Evaluator):
 
         """
         self.chatbot = chatbot
-        self.dataset = MMCovidLoader()
+        self.dataset = MMCovidLoader(n=n)
 
     def evaluate(self) -> dict:
         """Evaluate the chatbot on the MMCovid Dataset.

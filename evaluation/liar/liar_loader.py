@@ -29,10 +29,10 @@ class LiarLoader(FakeNewsDataset):
 
     """
 
-    def __init__(self, split: Literal["train", "test", "validation"] = "train") -> None:
-        self.dataset: datasets.Dataset = datasets.load_dataset("ucsbnlp/liar", split=split)
-        self.statements = self.dataset["statement"][:10]
-        self.labels = self.dataset["label"][:10]
+    def __init__(self, n: int, split: Literal["train", "test", "validation"] = "train") -> None: 
+        self.dataset: datasets.Dataset = datasets.load_dataset("ucsbnlp/liar", split=split)[:n]
+        self.statements = self.dataset["statement"]
+        self.labels = self.dataset["label"]
 
         excluded_features = ["statement", "label"]
         self.metadata = {
@@ -50,6 +50,7 @@ class LiarLoader(FakeNewsDataset):
             5: "pants-fire",
         }
         self.label2id = {v: k for k, v in self.id2label.items()}
+
 
     def __len__(self) -> int:
         """Get the length of the dataset.
