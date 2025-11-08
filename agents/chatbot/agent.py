@@ -4,7 +4,8 @@ from collections.abc import Generator
 from langchain.agents import create_agent
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import BaseMessage
-from langgraph.checkpoint.memory import InMemorySaver 
+from langchain_core.messages.ai import AIMessageChunk
+from langgraph.checkpoint.memory import InMemorySaver
 from pydantic import BaseModel
 
 from agents.chatbot.chatbot_interface import ChatbotInterface
@@ -71,6 +72,8 @@ class AgentChatbot(ChatbotInterface):
             stream_mode="messages",
         ):
             logger.info(f"AgentChatbot streaming step: {step[0].content}")
-            yield step[0].content
+            logger.info(f"step: {type(step)}")
+            if isinstance(step[0], AIMessageChunk):
+                yield step[0].content
 
 

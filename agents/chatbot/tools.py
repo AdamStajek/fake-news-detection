@@ -1,4 +1,5 @@
 from langchain.tools import tool
+from langchain_community.tools import DuckDuckGoSearchRun
 
 from agents.vectorstores.vectorstore import Vectorstore
 
@@ -15,4 +16,4 @@ def retrieve_context(query: str) -> tuple[str, list]:
 
 def get_tools() -> list:
     """Return the list of available tools."""
-    return [retrieve_context]
+    return [retrieve_context, DuckDuckGoSearchRun()]
