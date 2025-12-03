@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Literal
+from typing import Any, Literal
 
 import pandas as pd
 
@@ -22,7 +22,7 @@ class FakeNewsDataset(ABC):
         raise NotImplementedError(msg)
 
     @abstractmethod
-    def __getitem__(self, idx: int) -> tuple[str, int]:
+    def __getitem__(self, idx: int) -> tuple[str, Any]:
         """Get an item from the dataset.
 
         Args:

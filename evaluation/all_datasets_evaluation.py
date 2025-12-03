@@ -1,34 +1,50 @@
 from langchain_core.language_models import BaseChatModel
+from tqdm import tqdm
 
 from agents.chatbot.agent import AgentChatbot
 from agents.chatbot.chatbot_interface import ChatbotInterface
 from agents.chatbot.llms.anthropic import AnthropicLLM
 from agents.chatbot.llms.google import GoogleLLM
-from agents.chatbot.llms.openai import OpenAILLM
+from agents.chatbot.llms.prompts.multi_agent_prompts import (
+    get_multi_agent_prompts,
+)
 from agents.chatbot.llms.prompts.prompts import (
     get_detector_prompt,
     get_detector_prompt_as_str,
 )
+from agents.chatbot.multi_agent import MultiAgentChatbot
 from agents.chatbot.plain_chatbot import PlainChatbot
+from agents.chatbot.tools import DuckDuckGoSearchRun, get_tools, retrieve_context
+from agents.logger.logger import get_logger
 from agents.models.detector_model import DetectorModel
 from evaluation.evaluator_interface import EvaluatorInterface
 from evaluation.isot.isot_evaluator import IsotEvaluator
 from evaluation.liar.liar_evaluator import LiarEvaluator
 from evaluation.mmcovid.mmcovid_evaluator import MMCovidEvaluator
+from evaluation.polish_info.polish_info_evaluator import PolishInfoEvaluator
 
-models: list[BaseChatModel] = [OpenAILLM.get_chat_model(),
-          AnthropicLLM.get_chat_model(),
-          GoogleLLM.get_chat_model()]
+logger = get_logger()
 
-chatbots: list[type[ChatbotInterface]]  = [AgentChatbot, PlainChatbot]
+models: list[BaseChatModel] = [
+    AnthropicLLM.get_chat_model(),
+]
 
-evaluators: list[type[EvaluatorInterface]] = [LiarEvaluator,
-              MMCovidEvaluator,
-              IsotEvaluator]
+chatbots: list[type[ChatbotInterface]] = [PlainChatbot]
 
-def create_chatbot_instances(models: list[BaseChatModel],
-                             chatbots: list[type[ChatbotInterface]],
-                             ) -> list[ChatbotInterface]:
+evaluators: list[type[EvaluatorInterface]] = [
+    #LiarEvaluator,
+    #MMCovidEvaluator,
+    #IsotEvaluator,
+    PolishInfoEvaluator,
+]
+
+tools: list = [DuckDuckGoSearchRun()]
+
+
+def create_chatbot_instances(
+    models: list[BaseChatModel],
+    chatbots: list[type[ChatbotInterface]],
+) -> list[ChatbotInterface]:
     """Create instances of all chatbots."""
     chatbot_instances = []
     for chatbot_class in chatbots:
@@ -37,12 +53,22 @@ def create_chatbot_instances(models: list[BaseChatModel],
                 chatbot_instance = chatbot_class(
                     model=model,
                     prompt=get_detector_prompt_as_str(),
-                    schema=DetectorModel)
+                    schema=DetectorModel,
+                    tools=get_tools(),  # type: ignore[call-arg]
+                )
+            elif chatbot_class == MultiAgentChatbot:
+                chatbot_instance = chatbot_class(
+                    model=model,
+                    prompts=get_multi_agent_prompts(),  # type: ignore[call-arg]
+                    schema=DetectorModel,
+                    tools=get_tools(),  # type: ignore[call-arg]
+                )
             else:
                 chatbot_instance = chatbot_class(
                     model=model,
                     schema=DetectorModel,
-                    prompt=get_detector_prompt())
+                    prompt=get_detector_prompt(),
+                )
             chatbot_instances.append(chatbot_instance)
     return chatbot_instances
 
@@ -77,9 +103,7 @@ def evaluate(evaluators: list[EvaluatorInterface]) -> list[dict]:
 
     """
     results = []
-    for evaluator in evaluators:
-        metrics = evaluator.evaluate()
-
+    for evaluator in tqdm(evaluators):
         chatbot_type = (type(evaluator.chatbot).__name__.lower()
                         .replace("chatbot", ""))
 
@@ -90,6 +114,10 @@ def evaluate(evaluators: list[EvaluatorInterface]) -> list[dict]:
         )
 
         dataset = type(evaluator).__name__.replace("Evaluator", "")
+
+        logger.info(f"Evaluating {model_name} ({chatbot_type}) on {dataset} dataset")
+
+        metrics = evaluator.evaluate()
 
         result = {
             "model_name": model_name,
@@ -103,7 +131,10 @@ def evaluate(evaluators: list[EvaluatorInterface]) -> list[dict]:
 
 if __name__ == "__main__":
     chatbots_instances = create_chatbot_instances(models, chatbots)
-    evaluators_instances = create_evaluators_instances(chatbots_instances, evaluators)
+    evaluators_instances = create_evaluators_instances(
+        chatbots_instances, evaluators
+    )
     results = evaluate(evaluators_instances)
-    print(results)
+    logger.info(f"Evaluation results: {results}")
+
 

@@ -1,0 +1,74 @@
+@startuml EvaluatorInterface Hierarchy
+
+abstract class EvaluatorInterface {
+  + chatbot: ChatbotInterface
+  + {abstract} __init__(chatbot: ChatbotInterface): None
+  + {abstract} evaluate(): dict
+}
+
+interface ChatbotInterface {
+}
+
+class IsotEvaluator {
+  + chatbot: ChatbotInterface
+  - dataset: IsotLoader
+  + __init__(chatbot: ChatbotInterface, n: int = 2): None
+  + evaluate(): dict
+}
+
+class LiarEvaluator {
+  + chatbot: ChatbotInterface
+  - dataset: LiarLoader
+  - n: int
+  + __init__(chatbot: ChatbotInterface, n: int = 2): None
+  + evaluate(): dict
+  - _map_label(label: int): str
+}
+
+class MMCovidEvaluator {
+  + chatbot: ChatbotInterface
+  - dataset: MMCovidLoader
+  + __init__(chatbot: ChatbotInterface, n: int = 2): None
+  + evaluate(): dict
+}
+
+class IsotLoader {
+}
+
+class LiarLoader {
+}
+
+class MMCovidLoader {
+}
+
+EvaluatorInterface <|-- IsotEvaluator
+EvaluatorInterface <|-- LiarEvaluator
+EvaluatorInterface <|-- MMCovidEvaluator
+
+EvaluatorInterface --> ChatbotInterface : uses
+
+IsotEvaluator --> IsotLoader : uses
+LiarEvaluator --> LiarLoader : uses
+MMCovidEvaluator --> MMCovidLoader : uses
+
+note right of IsotEvaluator
+  Evaluates chatbot performance
+  on ISOT dataset
+  Returns: {"accuracy": float}
+end note
+
+note right of LiarEvaluator
+  Evaluates chatbot performance
+  on LIAR dataset
+  Maps 6 labels to 3 categories:
+  False, True, Unclear
+  Returns: {"accuracy": float}
+end note
+
+note right of MMCovidEvaluator
+  Evaluates chatbot performance
+  on MMCovid dataset
+  Returns: {"accuracy": float}
+end note
+
+@enduml

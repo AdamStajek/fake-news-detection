@@ -1,0 +1,62 @@
+@startuml FakeNewsDataset Hierarchy
+
+abstract class FakeNewsDataset {
+  + {abstract} __len__(): int
+  + {abstract} __getitem__(idx: int): tuple[str, int]
+  # _split_dataset(dataset: DataFrame, split: Literal["train", "validation"]): DataFrame
+}
+
+class IsotLoader {
+  - dataset: DataFrame
+  + __init__(n: int, split: Literal["train", "validation"] = "train"): None
+  + __len__(): int
+  + __getitem__(idx: int): tuple[str, int]
+  - _append_with_label(true_texts: DataFrame, false_texts: DataFrame): tuple[DataFrame, DataFrame]
+}
+
+class LiarLoader {
+  - dataset: Dataset
+  - statements: list
+  - labels: list
+  - metadata: dict
+  - id2label: dict
+  - label2id: dict
+  + __init__(n: int, split: Literal["train", "test", "validation"] = "train"): None
+  + __len__(): int
+  + __getitem__(idx: int): tuple[str, int]
+}
+
+class MMCovidLoader {
+  - dataset: DataFrame
+  + __init__(n: int, split: Literal["train", "validation"] = "train"): None
+  + __len__(): int
+  + __getitem__(idx: int): tuple[str, int]
+}
+
+FakeNewsDataset <|-- IsotLoader
+FakeNewsDataset <|-- LiarLoader
+FakeNewsDataset <|-- MMCovidLoader
+
+note right of IsotLoader
+  Loads ISOT Fake News Dataset
+  Contains news articles labeled
+  as fake (0) or real (1)
+  Source: onlineacademiccommunity.uvic.ca/isot
+end note
+
+note right of LiarLoader
+  Loads LIAR Dataset
+  Contains political statements with
+  6 truthfulness labels (false, half-true,
+  mostly-true, true, mostly-false, pants-fire)
+  Source: aclanthology.org/P17-2067/
+end note
+
+note right of MMCovidLoader
+  Loads MMCovid Dataset
+  Contains COVID-19 related claims
+  labeled as fake or real
+  Source: github.com/bigheiniu/MM-COVID
+end note
+
+@enduml

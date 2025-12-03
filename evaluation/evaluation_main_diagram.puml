@@ -1,0 +1,54 @@
+@startuml Evaluation Module - Main Diagram
+
+' Main interfaces
+abstract class EvaluatorInterface {
+  + chatbot: ChatbotInterface
+  + __init__(chatbot: ChatbotInterface): None
+  + {abstract} evaluate(): dict
+}
+
+abstract class FakeNewsDataset {
+  + {abstract} __len__(): int
+  + {abstract} __getitem__(idx: int): tuple[str, int]
+  # _split_dataset(dataset: DataFrame, split: Literal["train", "validation"]): DataFrame
+}
+
+' External dependencies
+interface ChatbotInterface {
+}
+
+' Helper functions module
+class all_datasets_evaluation <<module>> {
+  + models: list[BaseChatModel]
+  + chatbots: list[type[ChatbotInterface]]
+  + evaluators: list[type[EvaluatorInterface]]
+  + create_chatbot_instances(models, chatbots): list[ChatbotInterface]
+  + create_evaluators_instances(chatbots, evaluators): list
+  + evaluate(evaluators): list[dict]
+}
+
+' Relationships
+EvaluatorInterface --> ChatbotInterface : uses
+all_datasets_evaluation ..> EvaluatorInterface : creates
+all_datasets_evaluation ..> ChatbotInterface : creates
+all_datasets_evaluation ..> FakeNewsDataset : uses indirectly
+
+note right of EvaluatorInterface
+  Abstract base class for all evaluators.
+  Subclasses implement specific dataset
+  evaluation logic.
+end note
+
+note right of FakeNewsDataset
+  Abstract base class for all fake news
+  datasets. Subclasses load specific
+  datasets (ISOT, LIAR, MMCovid).
+end note
+
+note bottom of all_datasets_evaluation
+  Main evaluation orchestrator module.
+  Creates instances of chatbots and evaluators,
+  then runs evaluations across all combinations.
+end note
+
+@enduml
