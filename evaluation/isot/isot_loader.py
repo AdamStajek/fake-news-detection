@@ -5,7 +5,7 @@ import pandas as pd
 
 from evaluation.fake_news_dataset import FakeNewsDataset
 
-BASE_PATH = Path(__file__).parent / "data" / "isot"
+BASE_PATH = Path(__file__).parent.parent / "data" / "isot"
 TRUE_PATH = BASE_PATH / "True.csv"
 FAKE_PATH = BASE_PATH / "Fake.csv"
 
@@ -34,8 +34,8 @@ class IsotLoader(FakeNewsDataset):
             optional): A train or validation split for the dataset. Defaults to "train".
 
         """
-        true_texts = pd.read_csv(TRUE_PATH)[["text"]][:n//2]
-        false_texts = pd.read_csv(FAKE_PATH)[["text"]][:n//2]
+        true_texts = pd.read_csv(TRUE_PATH)[["text"]].sample(n=n//2, random_state=42)
+        false_texts = pd.read_csv(FAKE_PATH)[["text"]].sample(n=n//2, random_state=42)
         true_texts, false_texts = self._append_with_label(true_texts, false_texts)
         dataset = pd.concat([true_texts, false_texts], ignore_index=True)
         dataset = dataset.sample(frac=1).reset_index(drop=True)
@@ -43,8 +43,8 @@ class IsotLoader(FakeNewsDataset):
 
     def _append_with_label(self, true_texts: pd.DataFrame, false_texts: pd.DataFrame) \
             -> tuple[pd.DataFrame, pd.DataFrame]:
-        true_texts["label"] = 1
-        false_texts["label"] = 0
+        true_texts["label"] = "True"
+        false_texts["label"] = "False"
         return true_texts, false_texts
 
     def __len__(self) -> int:

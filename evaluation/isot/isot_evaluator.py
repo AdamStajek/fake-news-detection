@@ -3,12 +3,17 @@ from evaluation.evaluator_interface import EvaluatorInterface
 from evaluation.isot.isot_loader import IsotLoader
 from agents.agent_api import get_response
 from agents.chatbot.chatbot_interface import ChatbotInterface
+from agents.models.detector_model import DetectorModel
+from langchain_core.messages import AIMessage
+from agents.logger.logger import get_logger
+
+logger = get_logger()
 
 
 class IsotEvaluator(EvaluatorInterface):
     """A class for the evaluation of a chatbot on the ISOT Dataset."""
     
-    def __init__(self, chatbot: ChatbotInterface, n: int = 10) -> None:
+    def __init__(self, chatbot: ChatbotInterface, n: int = 20) -> None:
         """Initialize the IsotEvaluator.
 
         Args:
@@ -30,11 +35,31 @@ class IsotEvaluator(EvaluatorInterface):
         total = len(self.dataset)
 
         for i in range(total):
-            article, true_label = self.dataset[i]
-            response = get_response(self.chatbot, article)
-            predicted_label = json.loads(response).get("label")
-            if predicted_label == true_label:
-                correct += 1
+            try:
+                article, true_label = self.dataset[i]
+                response = get_response(self.chatbot, article)
+                if not response:
+                    logger.info("No response received from chatbot.")
+                    continue
+                if isinstance(response, AIMessage):
+                    response = response.content
+                    if not response:
+                        logger.info("No response content received from chatbot.")
+                        continue
+                if not isinstance(response, DetectorModel):
+                    try:
+                        response = DetectorModel.parse_raw(response)
+                    except Exception as e:
+                        logger.exception(f"Failed to parse response: {e}")
+                        continue
+                predicted_label = response.label
+
+                logger.info(f"Predicted: {predicted_label}, True: {true_label}")
+
+                if predicted_label == true_label:
+                    correct += 1
+            except Exception as e:
+                logger.exception(f"Error during evaluation of sample {i}: {e}")
 
         accuracy = correct / total
         return {"accuracy": accuracy}
