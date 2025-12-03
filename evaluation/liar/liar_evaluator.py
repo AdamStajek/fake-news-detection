@@ -3,13 +3,17 @@ import json
 from agents.agent_api import get_response
 from agents.chatbot.chatbot_interface import ChatbotInterface
 from evaluation.evaluator_interface import EvaluatorInterface
+from agents.models.detector_model import DetectorModel
 from evaluation.liar.liar_loader import LiarLoader
+from langchain_core.messages import AIMessage
+from agents.logger.logger import get_logger
 
+logger = get_logger()
 
 class LiarEvaluator(EvaluatorInterface):
     """A class for the evaluation of a chatbot on the Liar Dataset."""
 
-    def __init__(self, chatbot: ChatbotInterface, n: int = 10) -> None:
+    def __init__(self, chatbot: ChatbotInterface, n: int = 20) -> None:
         """Initialize the LiarEvaluator.
 
         Args:
@@ -32,13 +36,29 @@ class LiarEvaluator(EvaluatorInterface):
         total = len(self.dataset)
 
         for i in range(total):
-            statement, true_label = self.dataset[i]
-            true_label = self._map_label(true_label)
-            response = get_response(self.chatbot, statement)
-            predicted_label = json.loads(response).get("label")
+            try:
+                statement, true_label = self.dataset[i]
+                true_label = self._map_label(true_label)
+                response = get_response(self.chatbot, statement)
+                if not response:
+                    logger.info("No response received from chatbot.")
+                    continue
+                if isinstance(response, AIMessage):
+                    response = response.content
+                    if not response:
+                        logger.info("No response content received from chatbot.")
+                        continue
+                if not isinstance(response, DetectorModel):
+                    response = DetectorModel.parse_raw(response)
+                predicted_label = response.label
 
-            if predicted_label == true_label:
-                correct += 1
+                logger.info(f"Predicted: {predicted_label}, True: {true_label}")
+
+                if predicted_label == true_label:
+                    correct += 1
+            except Exception as e:
+                logger.exception(f"Error during evaluation of sample {i}: {e}")
+                continue
 
         accuracy = correct / total
         return {"accuracy": accuracy}

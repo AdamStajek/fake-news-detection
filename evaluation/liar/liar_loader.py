@@ -1,3 +1,4 @@
+import random
 from typing import Literal
 
 import datasets
@@ -30,7 +31,9 @@ class LiarLoader(FakeNewsDataset):
     """
 
     def __init__(self, n: int, split: Literal["train", "test", "validation"] = "train") -> None: 
-        self.dataset: datasets.Dataset = datasets.load_dataset("ucsbnlp/liar", split=split)[:n]
+        self.dataset = datasets.load_dataset("ucsbnlp/liar", split=split)
+        indices = random.sample(range(len(self.dataset)), n)
+        self.dataset = self.dataset.select(indices)
         self.statements = self.dataset["statement"]
         self.labels = self.dataset["label"]
 
