@@ -83,5 +83,10 @@ else:
         st.session_state.messages.append({"role": "user", "content": prompt})
 
         with st.chat_message("assistant"):
+            thinking_placeholder = st.empty()
+            thinking_placeholder.markdown("🤔 **Thinking...**")
             response = st.write_stream(response_generator())
-        st.session_state.messages.append({"role": "assistant", "content": response})
+            thinking_placeholder.empty()
+        st.session_state.messages.append(
+            {"role": "assistant", "content": response},
+        )
