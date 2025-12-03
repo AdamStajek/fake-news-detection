@@ -4,12 +4,10 @@ from tqdm import tqdm
 from agents.chatbot.agent import AgentChatbot
 from agents.chatbot.chatbot_interface import ChatbotInterface
 from agents.chatbot.llms.anthropic import AnthropicLLM
-from agents.chatbot.llms.prompts.multi_agent_prompts import (
-    get_multi_agent_prompts,
-)
 from agents.chatbot.llms.prompts.prompts import (
     get_detector_prompt,
     get_detector_prompt_as_str,
+    get_multi_agent_prompts,
 )
 from agents.chatbot.multi_agent import MultiAgentChatbot
 from agents.chatbot.plain_chatbot import PlainChatbot

@@ -10,13 +10,25 @@ from agents.vectorstores.vectorstore import Vectorstore
 
 logger = get_logger()
 
-vectorstore = Vectorstore("mmcovid")
+
+class VectorstoreHolder:
+    """Holder for lazy-loaded vectorstore instance."""
+
+    _instance: Vectorstore | None = None
+
+    @classmethod
+    def get_vectorstore(cls) -> Vectorstore:
+        """Get or initialize the vectorstore lazily."""
+        if cls._instance is None:
+            cls._instance = Vectorstore("mmcovid")
+        return cls._instance
 
 
 @tool(response_format="content_and_artifact")
 def retrieve_context(query: str) -> tuple[str, list]:
     """Retrieve information to help answer a query."""
     logger.info(f"Tool 'retrieve_context' called with query: {query}")
+    vectorstore = VectorstoreHolder.get_vectorstore()
     retrieved_docs = vectorstore.get_context(query)
     serialized = "\n\n".join(
         (f"Source: {doc.metadata}\nContent: {doc.page_content}")
