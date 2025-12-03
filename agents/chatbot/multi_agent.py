@@ -14,6 +14,8 @@ from agents.logger.logger import get_logger
 
 logger = get_logger()
 
+NUM_AGENTS = 3
+
 
 class MultiAgentChatbot(ChatbotInterface):
     """A chatbot that uses multiple agents to reach a consensus."""
@@ -23,7 +25,7 @@ class MultiAgentChatbot(ChatbotInterface):
         model: BaseChatModel,
         prompts: list[str],
         schema: BaseModel | None = None,
-        tools: list = [],
+        tools: list | None = None,
         id_: str = str(uuid.uuid4()),
     ) -> None:
         """Create a new multi-agent chatbot instance.
@@ -34,21 +36,22 @@ class MultiAgentChatbot(ChatbotInterface):
                 Should have exactly 3 prompts for 3 agents.
             schema (BaseModel | None): Optional Pydantic model class to
                 enable structured output.
-            tools (list): List of tools available to the agents.
+            tools (list | None): List of tools available to the agents.
             id_ (str, optional): Id used to distinguish conversations.
                 Defaults to a UUID.
 
         """
+        if tools is None:
+            tools = []
         self.model = model
         self.schema = schema
         self.tools = tools
         self.id = id_
 
-        if len(prompts) != 3:
-            msg = "Exactly 3 prompts required for 3 agents"
+        if len(prompts) != NUM_AGENTS:
+            msg = f"Exactly {NUM_AGENTS} prompts required for {NUM_AGENTS} agents"
             raise ValueError(msg)
 
-        # Create 3 agents with different prompts
         self.agents = [
             create_agent(
                 model,
@@ -60,7 +63,7 @@ class MultiAgentChatbot(ChatbotInterface):
             for prompt in prompts
         ]
 
-        logger.info("Initialized MultiAgentChatbot with 3 agents")
+        logger.info(f"Initialized MultiAgentChatbot with {NUM_AGENTS} agents")
 
     def chat(self, user_input: str) -> BaseMessage:
         """Generate a consensus response from multiple agents.
@@ -73,12 +76,11 @@ class MultiAgentChatbot(ChatbotInterface):
 
         """
         logger.info(f"User input: {user_input}")
-        logger.info("Querying all 3 agents...")
+        logger.info(f"Querying all {NUM_AGENTS} agents...")
 
         responses = []
         labels = []
 
-        # Get responses from all 3 agents
         for i, agent in enumerate(self.agents, start=1):
             logger.info(f"Querying Agent {i}...")
             try:
@@ -86,7 +88,7 @@ class MultiAgentChatbot(ChatbotInterface):
                     {"messages": [{"role": "user", "content": user_input}]},
                     {
                         "configurable": {"thread_id": f"{self.id}_agent{i}"},
-                        "recursion_limit": 50,  # Increase limit to allow for tool usage
+                        "recursion_limit": 50,
                     },
                 )
 
@@ -102,7 +104,7 @@ class MultiAgentChatbot(ChatbotInterface):
                         logger.info(
                             f"Agent {i} response: "
                             f"label={output.label}, "
-                            f"explanation={output.explanation[:100]}..."
+                            f"explanation={output.explanation[:100]}...",
                         )
                     else:
                         logger.info(f"Agent {i} response: {output}")
@@ -117,26 +119,21 @@ class MultiAgentChatbot(ChatbotInterface):
             msg = "Failed to get responses from any agent"
             raise RuntimeError(msg)
 
-        # Determine consensus
         if self.schema and labels:
-            # Use majority voting for structured output
             label_counts = Counter(labels)
             majority_label = label_counts.most_common(1)[0][0]
             logger.info(f"Label voting results: {dict(label_counts)}")
             logger.info(f"Consensus label: {majority_label}")
 
-            # Find a response with the majority label
             for response in responses:
                 if hasattr(response, "label") and response.label == majority_label:
                     logger.info(f"MultiAgentChatbot consensus: {response}")
                     return response
 
-            # Fallback to first response if no exact match
             return responses[0]
-        else:
-            # For unstructured output, return the first valid response
-            logger.info(f"MultiAgentChatbot response: {responses[0]}")
-            return responses[0]
+
+        logger.info(f"MultiAgentChatbot response: {responses[0]}")
+        return responses[0]
 
     def stream_chat(self, user_input: str) -> Generator[str, None, None]:
         """Generate a response from the chatbot word by word.
@@ -149,10 +146,9 @@ class MultiAgentChatbot(ChatbotInterface):
             one word at a time.
 
         """
-        # For multi-agent, we'll use the first agent for streaming
         logger.info(
-            f"Streaming with Agent 1 (multi-agent streaming "
-            f"not fully supported)"
+            "Streaming with Agent 1 (multi-agent streaming "
+            "not fully supported)",
         )
         for step in self.agents[0].stream(
             {"messages": [{"role": "user", "content": user_input}]},

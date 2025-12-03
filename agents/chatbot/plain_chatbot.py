@@ -2,19 +2,23 @@ from __future__ import annotations
 
 import json
 import uuid
-from collections.abc import Generator
+from typing import TYPE_CHECKING
 
-from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, trim_messages
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig, RunnableSequence
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, MessagesState, StateGraph
-from langgraph.graph.state import CompiledStateGraph
 from pydantic import BaseModel
 
 from agents.chatbot.chatbot_interface import ChatbotInterface
 from agents.logger.logger import get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
+    from langchain_core.language_models import BaseChatModel
+    from langchain_core.prompts import ChatPromptTemplate
+    from langgraph.graph.state import CompiledStateGraph
 
 logger = get_logger()
 
@@ -32,11 +36,15 @@ class PlainChatbot(ChatbotInterface):
         """Create a new plain chatbot (without tools and rag) instance.
 
         Args:
-            model (BaseChatModel): Language model to use for generating responses.
-            prompt (ChatPromptTemplate): Prompt template to use for generating responses.
-            schema (type[BaseModel] | dict | None): Optional Pydantic model class or JSON
-                schema dict to enable structured output.
-            id_ (str, optional): Id used to distinguish conversations. Defaults to a UUID.
+            model (BaseChatModel): Language model to use for generating
+                responses.
+            prompt (ChatPromptTemplate): Prompt template to use for
+                generating responses.
+            schema (type[BaseModel] | dict | None): Optional Pydantic
+                model class or JSON schema dict to enable structured
+                output.
+            id_ (str, optional): Id used to distinguish conversations.
+                Defaults to a UUID.
 
         """
         self.model = model

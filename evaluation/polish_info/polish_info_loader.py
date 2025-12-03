@@ -11,35 +11,36 @@ DATA_PATH = BASE_PATH / "data.json"
 
 
 class PolishInfoLoader(FakeNewsDataset):
-    """Polish Info Dataset Loader - Loads the Polish Info fake news dataset.
+    """Polish Info Dataset Loader.
 
-    The Polish Info dataset contains Polish news statements labeled as True, False, or Unclear.
-    Each instance includes the statement text and its label.
-
-    Args:
-        n (int): Number of samples to load from the dataset
-        split (Literal["train", "validation"]): The split of the dataset to load
-            Defaults to "train".
+    Loads the Polish Info fake news dataset.
+    The Polish Info dataset contains Polish news statements labeled as
+    True, False, or Unclear. Each instance includes the statement text
+    and its label.
 
     Attributes:
-        dataset (pd.DataFrame): DataFrame containing statements and labels
+        dataset: DataFrame containing statements and labels.
 
     """
 
-    def __init__(self, n: int, split: Literal["train", "validation"] = "train") -> None:
+    def __init__(
+        self, n: int, split: Literal["train", "validation"] = "train",
+    ) -> None:
         """Create a PolishInfoLoader instance.
 
         Args:
-            n (int): Number of samples to load from the dataset
-            split (Literal["train", "validation"],
-            optional): A train or validation split for the dataset. Defaults to "train".
+            n: Number of samples to load from the dataset.
+            split: A train or validation split for the dataset.
+                Defaults to "train".
 
         """
-        with open(DATA_PATH, "r", encoding="utf-8") as f:
+        with DATA_PATH.open(encoding="utf-8") as f:
             data = json.load(f)
-        
+
         dataset = pd.DataFrame(data)
-        dataset = dataset.sample(n=min(n, len(dataset)), random_state=42).reset_index(drop=True)
+        dataset = dataset.sample(
+            n=min(n, len(dataset)), random_state=42,
+        ).reset_index(drop=True)
         self.dataset = self._split_dataset(dataset, split)
 
     def __len__(self) -> int:
@@ -65,3 +66,4 @@ class PolishInfoLoader(FakeNewsDataset):
         statement = row["statement"]
         label = row["label"]
         return statement, label
+

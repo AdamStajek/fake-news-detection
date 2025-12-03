@@ -1,23 +1,24 @@
-import json
-from evaluation.evaluator_interface import EvaluatorInterface
-from evaluation.isot.isot_loader import IsotLoader
+from langchain_core.messages import AIMessage
+
 from agents.agent_api import get_response
 from agents.chatbot.chatbot_interface import ChatbotInterface
-from agents.models.detector_model import DetectorModel
-from langchain_core.messages import AIMessage
 from agents.logger.logger import get_logger
+from agents.models.detector_model import DetectorModel
+from evaluation.evaluator_interface import EvaluatorInterface
+from evaluation.isot.isot_loader import IsotLoader
 
 logger = get_logger()
 
 
 class IsotEvaluator(EvaluatorInterface):
     """A class for the evaluation of a chatbot on the ISOT Dataset."""
-    
+
     def __init__(self, chatbot: ChatbotInterface, n: int = 20) -> None:
         """Initialize the IsotEvaluator.
 
         Args:
-            chatbot: The chatbot to be evaluated
+            chatbot: The chatbot to be evaluated.
+            n: Number of samples to evaluate.
 
         """
         self.chatbot = chatbot
@@ -49,8 +50,8 @@ class IsotEvaluator(EvaluatorInterface):
                 if not isinstance(response, DetectorModel):
                     try:
                         response = DetectorModel.parse_raw(response)
-                    except Exception as e:
-                        logger.exception(f"Failed to parse response: {e}")
+                    except Exception:
+                        logger.exception("Failed to parse response")
                         continue
                 predicted_label = response.label
 
@@ -58,8 +59,8 @@ class IsotEvaluator(EvaluatorInterface):
 
                 if predicted_label == true_label:
                     correct += 1
-            except Exception as e:
-                logger.exception(f"Error during evaluation of sample {i}: {e}")
+            except Exception:
+                logger.exception(f"Error during evaluation of sample {i}")
 
         accuracy = correct / total
         return {"accuracy": accuracy}

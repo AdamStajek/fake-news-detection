@@ -35,7 +35,7 @@ if "chatbot" not in st.session_state:
         "search_research_papers": "Search Research Papers (arXiv)",
         "analyze_news_source": "Analyze News Source Credibility",
     }
-    
+
     selected_tools = []
     for tool_key, tool_label in tool_labels.items():
         if st.checkbox(tool_label, value=True, key=tool_key):

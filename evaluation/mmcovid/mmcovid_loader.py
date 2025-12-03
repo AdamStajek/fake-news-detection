@@ -7,19 +7,27 @@ from evaluation.fake_news_dataset import FakeNewsDataset
 
 DATASET_PATH = Path(__file__).parent.parent / "data" / "mmcovid" / "english_news.csv"
 
+
 class MMCovidLoader(FakeNewsDataset):
-    """MMCovid Dataset Loader - Loads the MMCovid Fake News Dataset(https://github.com/bigheiniu/MM-COVID).
+    """MMCovid Dataset Loader - Loads the MMCovid Fake News Dataset.
 
     The MMCovid dataset contains claims about Covid19.
     """
 
-    def __init__(self, n: int, split: Literal["train", "validation"] = "train", 
-                 random=True) -> None:
+    def __init__(
+        self,
+        n: int,
+        split: Literal["train", "validation"] = "train",
+        *,
+        random: bool = True,
+    ) -> None:
         """Create an MMCovidLoader instance.
 
         Args:
-            split (Literal["train", "validation"],
-            optional): A train or validation split for the dataset. Defaults to "train".
+            n: Number of samples to load.
+            split: A train or validation split for the dataset.
+                Defaults to "train".
+            random: Whether to sample randomly or take the first n samples.
 
         """
         dataset = pd.read_csv(DATASET_PATH)[["claim", "label"]]
@@ -49,3 +57,4 @@ class MMCovidLoader(FakeNewsDataset):
 
         """
         return self.dataset.iloc[idx]["claim"], self.dataset.iloc[idx]["label"]
+

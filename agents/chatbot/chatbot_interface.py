@@ -21,20 +21,22 @@ class ChatbotInterface(ABC):
         schema: type[BaseModel] | dict | None = None,
         id_: str = str(uuid.uuid4()),
     ) -> None:
-            """Create a new chatbot instance.
+        """Create a new chatbot instance.
 
-            Args:
-                model (BaseChatModel): Language model to use for generating responses.
-                prompt (ChatPromptTemplate): Prompt template to use for generating
+        Args:
+            model (BaseChatModel): Language model to use for generating
                 responses.
-                schema (type[BaseModel] | dict | None): Optional Pydantic model class or
-                JSON schema dict to enable structured output.
-                id_ (str, optional): Id used to distinguish conversations. 
+            prompt (ChatPromptTemplate): Prompt template to use for
+                generating responses.
+            schema (type[BaseModel] | dict | None): Optional Pydantic
+                model class or JSON schema dict to enable structured
+                output.
+            id_ (str, optional): Id used to distinguish conversations.
                 Defaults to a UUID.
 
-            """
-            msg = "__init__ method not implemented."
-            raise NotImplementedError(msg)
+        """
+        msg = "__init__ method not implemented."
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def chat(self, user_input: str) -> BaseMessage:

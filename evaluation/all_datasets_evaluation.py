@@ -4,7 +4,6 @@ from tqdm import tqdm
 from agents.chatbot.agent import AgentChatbot
 from agents.chatbot.chatbot_interface import ChatbotInterface
 from agents.chatbot.llms.anthropic import AnthropicLLM
-from agents.chatbot.llms.google import GoogleLLM
 from agents.chatbot.llms.prompts.multi_agent_prompts import (
     get_multi_agent_prompts,
 )
@@ -14,13 +13,10 @@ from agents.chatbot.llms.prompts.prompts import (
 )
 from agents.chatbot.multi_agent import MultiAgentChatbot
 from agents.chatbot.plain_chatbot import PlainChatbot
-from agents.chatbot.tools import DuckDuckGoSearchRun, get_tools, retrieve_context
+from agents.chatbot.tools import DuckDuckGoSearchRun, get_tools
 from agents.logger.logger import get_logger
 from agents.models.detector_model import DetectorModel
 from evaluation.evaluator_interface import EvaluatorInterface
-from evaluation.isot.isot_evaluator import IsotEvaluator
-from evaluation.liar.liar_evaluator import LiarEvaluator
-from evaluation.mmcovid.mmcovid_evaluator import MMCovidEvaluator
 from evaluation.polish_info.polish_info_evaluator import PolishInfoEvaluator
 
 logger = get_logger()
@@ -132,7 +128,7 @@ def evaluate(evaluators: list[EvaluatorInterface]) -> list[dict]:
 if __name__ == "__main__":
     chatbots_instances = create_chatbot_instances(models, chatbots)
     evaluators_instances = create_evaluators_instances(
-        chatbots_instances, evaluators
+        chatbots_instances, evaluators,
     )
     results = evaluate(evaluators_instances)
     logger.info(f"Evaluation results: {results}")

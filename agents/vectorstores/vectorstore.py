@@ -5,16 +5,29 @@ from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
 from agents.settings import get_settings
-from agents.vectorstores.embeddings.openai_embeddings import OpenAIEmbeddingsWrapper
+from agents.vectorstores.embeddings.openai_embeddings import (
+    OpenAIEmbeddingsWrapper,
+)
 
 settings = get_settings()
 embedding_model = OpenAIEmbeddingsWrapper.get_embedding_model()
 
+
 class Vectorstore:
     """Wrapper around Chroma vector store for adding and retrieving documents."""
 
-    def __init__(self, collection_name: str,
-                 embedding_function: Embeddings = embedding_model):
+    def __init__(
+        self,
+        collection_name: str,
+        embedding_function: Embeddings = embedding_model,
+    ) -> None:
+        """Initialize the Vectorstore.
+
+        Args:
+            collection_name (str): Name of the collection.
+            embedding_function (Embeddings): Embedding function to use.
+
+        """
         self.vectorstore = Chroma(
             collection_name=collection_name,
             embedding_function=embedding_function,
@@ -26,10 +39,10 @@ class Vectorstore:
         """Check if the vectorstore is empty.
 
         Returns:
-        bool: True if empty, False otherwise.
+            bool: True if empty, False otherwise.
 
         """
-        return self.vectorstore._collection.count() == 0
+        return self.vectorstore._collection.count() == 0  # noqa: SLF001
 
     def add_documents(self, documents: list[Document]) -> None:
         """Add documents to the vectorstore.

@@ -9,20 +9,15 @@ BASE_PATH = Path(__file__).parent.parent / "data" / "isot"
 TRUE_PATH = BASE_PATH / "True.csv"
 FAKE_PATH = BASE_PATH / "Fake.csv"
 
+
 class IsotLoader(FakeNewsDataset):
-    """ISOT Dataset Loader - Loads the ISOT Fake News Dataset (https://onlineacademiccommunity.uvic.ca/isot/2022/11/27/fake-news-detection-datasets/).
+    """ISOT Dataset Loader - Loads the ISOT Fake News Dataset.
 
     The ISOT dataset contains news articles labeled as fake or real.
     Each instance includes the article title, text, and its label.
 
-    Args:
-        split (Literal["train", "test", "validation"]): The split of the dataset to load
-            Defaults to "train".
-
     Attributes:
-        titles (list): List of news article titles
-        texts (list): List of news article texts
-        labels (list): List of labels (0: fake, 1: real)
+        dataset: Pandas DataFrame containing the dataset.
 
     """
 
@@ -30,8 +25,9 @@ class IsotLoader(FakeNewsDataset):
         """Create an ISOTLoader instance.
 
         Args:
-            split (Literal["train", "validation"],
-            optional): A train or validation split for the dataset. Defaults to "train".
+            n: Number of samples to load.
+            split: A train or validation split for the dataset.
+                Defaults to "train".
 
         """
         true_texts = pd.read_csv(TRUE_PATH)[["text"]].sample(n=n//2, random_state=42)
@@ -41,8 +37,9 @@ class IsotLoader(FakeNewsDataset):
         dataset = dataset.sample(frac=1).reset_index(drop=True)
         self.dataset = self._split_dataset(dataset, split)
 
-    def _append_with_label(self, true_texts: pd.DataFrame, false_texts: pd.DataFrame) \
-            -> tuple[pd.DataFrame, pd.DataFrame]:
+    def _append_with_label(
+        self, true_texts: pd.DataFrame, false_texts: pd.DataFrame,
+    ) -> tuple[pd.DataFrame, pd.DataFrame]:
         true_texts["label"] = "True"
         false_texts["label"] = "False"
         return true_texts, false_texts

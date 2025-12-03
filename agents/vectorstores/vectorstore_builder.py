@@ -1,5 +1,5 @@
 import argparse
-import os
+from pathlib import Path
 
 from langchain_community.document_loaders import TextLoader
 from langchain_core.documents import Document
@@ -13,15 +13,17 @@ from agents.vectorstores.vectorstore import Vectorstore
 settings = get_settings()
 logger = get_logger()
 
+
 class VectorstoreBuilder:
-    """Class to build and populate the vectorstore with documents from a specified directory."""
+    """Class to build and populate the vectorstore with documents."""
 
     def __init__(self, vectorstore: Vectorstore, docs_path: str) -> None:
-        """Initialize the VectorstoreBuilder with a vectorstore and documents path.
+        """Initialize VectorstoreBuilder with vectorstore and documents path.
 
         Args:
             vectorstore (Vectorstore): The vectorstore instance to populate.
             docs_path (str): Path to the directory containing documents.
+
         """
         self.splitter = RecursiveCharacterTextSplitter(
             chunk_size=settings.chunk_size, chunk_overlap=settings.chunk_overlap,
@@ -32,7 +34,7 @@ class VectorstoreBuilder:
         self.chunk_overlap = settings.chunk_overlap
 
     def build_vectorstore(self) -> None:
-        """Build and populate the vectorstore with documents from the specified directory."""
+        """Build and populate vectorstore with documents from directory."""
         docs = self._load_docs()
         docs_slices = self._split_into_slices(docs, max_len=5000)
         logger.info(f"Adding {len(docs)} documents to vectorstore.")
@@ -66,12 +68,12 @@ class VectorstoreBuilder:
             list: List of file paths.
 
         """
-        docs_paths = []
-        for filename in os.listdir(self.docs_path):
-            if filename.endswith(".txt"):
-                file_path = os.path.join(self.docs_path, filename)
-                docs_paths.append(file_path)
-        return docs_paths
+        docs_path = Path(self.docs_path)
+        return [
+            str(file_path)
+            for file_path in docs_path.iterdir()
+            if file_path.suffix == ".txt"
+        ]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

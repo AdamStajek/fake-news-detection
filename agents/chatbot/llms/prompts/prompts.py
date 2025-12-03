@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import yaml
 from langchain_core.prompts import (
     ChatPromptTemplate,
@@ -5,12 +7,13 @@ from langchain_core.prompts import (
     SystemMessagePromptTemplate,
 )
 
-with open("agents/chatbot/llms/prompts/prompts.yaml") as file:
+prompts_file = Path("agents/chatbot/llms/prompts/prompts.yaml")
+with prompts_file.open() as file:
     prompts = yaml.safe_load(file)
 
 
 def get_detector_prompt() -> ChatPromptTemplate:
-    """Load and return the fake news detection prompt template as a ChatPromptTemplate."""
+    """Load and return fake news detection prompt template."""
     return ChatPromptTemplate.from_messages(
         [
             SystemMessagePromptTemplate.from_template(
@@ -19,6 +22,7 @@ def get_detector_prompt() -> ChatPromptTemplate:
             MessagesPlaceholder(variable_name="messages"),
         ],
     )
+
 
 def get_detector_prompt_as_str() -> str:
     """Load and return the fake news detection prompt template as a string."""

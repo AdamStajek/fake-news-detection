@@ -7,30 +7,32 @@ from evaluation.fake_news_dataset import FakeNewsDataset
 
 
 class LiarLoader(FakeNewsDataset):
-    """Liar Dataset Loader - Loads the Liar Dataset (https://aclanthology.org/P17-2067/).
+    """Liar Dataset Loader - Loads the Liar Dataset.
 
     The Liar dataset contains political statements labeled for truthfulness.
     Each instance includes the statement text, its label, and various metadata
     such as speaker information, subject, and context.
 
-    Args:
-        split (Literal["train", "test", "validation"]): The split of the dataset to load
-            Defaults to "train".
-
     Attributes:
-        statements (list): List of political statements
-        labels (list): List of truthfulness labels (0: false, 1: half-true,
-        2: mostly-true, 3: true, 4: mostly-false, 5: pants-fire)
-        metadata (dict): Dictionary containing additional features:
-        'id', 'subject', 'speaker',
-        'job_title', 'state_info', 'party_affiliation',
-        'barely_true_counts', 'false_counts',
-        'half_true_counts', 'mostly_true_counts',
-        'pants_on_fire_counts', 'context'
+        statements: List of political statements.
+        labels: List of truthfulness labels (0: false, 1: half-true,
+            2: mostly-true, 3: true, 4: mostly-false, 5: pants-fire).
+        metadata: Dictionary containing additional features.
+        id2label: Mapping from label ID to label name.
+        label2id: Mapping from label name to label ID.
 
     """
 
-    def __init__(self, n: int, split: Literal["train", "test", "validation"] = "train") -> None: 
+    def __init__(
+        self, n: int, split: Literal["train", "test", "validation"] = "train",
+    ) -> None:
+        """Initialize the LiarLoader.
+
+        Args:
+            n: Number of samples to load.
+            split: The split of the dataset to load. Defaults to "train".
+
+        """
         self.dataset = datasets.load_dataset("ucsbnlp/liar", split=split)
         indices = random.sample(range(len(self.dataset)), n)
         self.dataset = self.dataset.select(indices)
@@ -54,7 +56,6 @@ class LiarLoader(FakeNewsDataset):
         }
         self.label2id = {v: k for k, v in self.id2label.items()}
 
-
     def __len__(self) -> int:
         """Get the length of the dataset.
 
@@ -75,3 +76,4 @@ class LiarLoader(FakeNewsDataset):
 
         """
         return self.statements[idx], self.labels[idx]
+

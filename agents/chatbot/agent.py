@@ -23,39 +23,56 @@ class AgentChatbot(ChatbotInterface):
         model: BaseChatModel,
         prompt: str,
         schema: BaseModel | None = None,
-        tools: list = [],
+        tools: list | None = None,
         id_: str = str(uuid.uuid4()),
     ) -> None:
-       """Create a new chatbot instance.
+        """Create a new chatbot instance.
 
-       Args:
-        model (BaseChatModel): Language model to use for generating responses.
-        prompt (str): Prompt template to use for generating
-        responses.
-        schema (type[BaseModel] | dict | None): Optional Pydantic model class or
-        JSON schema dict to enable structured output.
-        id_ (str, optional): Id used to distinguish conversations.
-        Defaults to a UUID.
+        Args:
+            model (BaseChatModel): Language model to use for generating
+                responses.
+            prompt (str): Prompt template to use for generating responses.
+            schema (type[BaseModel] | dict | None): Optional Pydantic model
+                class or JSON schema dict to enable structured output.
+            tools (list | None): List of tools available to the agent.
+            id_ (str, optional): Id used to distinguish conversations.
+                Defaults to a UUID.
 
-       """
-       self.model = model
-       self.schema = schema
-       self.tools = tools  # Store tools for tool call handling
-       self.agent = create_agent(
-           model,
-           system_prompt=prompt,
-           tools=tools,
-           response_format=ToolStrategy(schema) if schema else None,
-           checkpointer=InMemorySaver(),
-       )
-       self.id = id_
+        """
+        if tools is None:
+            tools = []
+        self.model = model
+        self.schema = schema
+        self.tools = tools
+        self.agent = create_agent(
+            model,
+            system_prompt=prompt,
+            tools=tools,
+            response_format=ToolStrategy(schema) if schema else None,
+            checkpointer=InMemorySaver(),
+        )
+        self.id = id_
 
     def chat(self, user_input: str) -> BaseMessage:
+        """Generate a response from the chatbot.
+
+        Args:
+            user_input (str): The user's input message.
+
+        Returns:
+            BaseMessage: The chatbot's response message.
+
+        Raises:
+            RuntimeError: If failed to get response after retries.
+
+        """
         retries = 3
-        for i in range(retries):
+        for _i in range(retries):
             logger.info(f"User input: {user_input}")
-            result = self.agent.invoke({"messages": [{"role": "user", "content": user_input}]},
-                                    {"configurable": {"thread_id": self.id}},)
+            result = self.agent.invoke(
+                {"messages": [{"role": "user", "content": user_input}]},
+                {"configurable": {"thread_id": self.id}},
+            )
             if self.schema:
                 output = result["structured_response"]
             else:
@@ -66,15 +83,17 @@ class AgentChatbot(ChatbotInterface):
         msg = "Failed to get response from agent after retries."
         raise RuntimeError(msg)
 
-
-    def stream_chat(self, user_input: str) -> Generator[str, None, None]:
+    def stream_chat(
+        self, user_input: str,
+    ) -> Generator[str, None, None]:
         """Generate a response from the chatbot word by word.
 
         Args:
             user_input (str): The user's input message.
 
         Raises:
-            NotImplementedError: When the function is not implemented in the child.
+            NotImplementedError: When the function is not implemented
+                in the child.
 
         Yields:
             Generator[str, None, None]: The chatbot's response message,
@@ -98,8 +117,12 @@ class AgentChatbot(ChatbotInterface):
                         if isinstance(block, dict):
                             if block.get("type") == "text" and block.get("text"):
                                 yield block["text"]
-                        elif hasattr(block, "type") and block.type == "text":
-                            if hasattr(block, "text") and block.text:
-                                yield block.text
+                        elif (
+                            hasattr(block, "type")
+                            and block.type == "text"
+                            and hasattr(block, "text")
+                            and block.text
+                        ):
+                            yield block.text
 
 

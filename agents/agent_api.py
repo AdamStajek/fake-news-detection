@@ -1,14 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Generator
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from dotenv import load_dotenv
-from langchain_core.language_models import BaseChatModel
-from pydantic import BaseModel
 
 from agents.chatbot.agent import AgentChatbot
-from agents.chatbot.chatbot_interface import ChatbotInterface
 from agents.chatbot.llms.google import GoogleLLM
 from agents.chatbot.llms.prompts.prompts import (
     get_detector_prompt,
@@ -19,11 +15,18 @@ from agents.chatbot.tools import get_tools
 from agents.logger.logger import get_logger
 from agents.models.detector_model import DetectorModel
 
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
+    from langchain_core.language_models import BaseChatModel
+    from pydantic import BaseModel
+
+    from agents.chatbot.chatbot_interface import ChatbotInterface
+
 load_dotenv(override=True)
 
 logger = get_logger()
 
-# Model name mappings
 MODEL_MAP = {
     "Gemini 2.5 Flash": ("google", "gemini-2.5-flash"),
     "Gemini 2.5 Pro": ("google", "gemini-2.5-pro"),
@@ -41,21 +44,25 @@ def create_chatbot(
 
     Args:
         chatbot_type: The type of chatbot ("agent" or "plain").
-        model_name: The model name (e.g., "Claude Sonnet 3.7", "Gemini 2.5 Flash").
+        model_name: The model name (e.g., "Claude Sonnet 3.7",
+            "Gemini 2.5 Flash").
         schema: Optional Pydantic schema for structured output.
             Defaults to DetectorModel. If None, no schema is used.
-        vectorstore_collection_name: Name of vectorstore collection (required for agent).
-        selected_tools: List of tool names to include (only for agent chatbot).
+        vectorstore_collection_name: Name of vectorstore collection
+            (required for agent).
+        selected_tools: List of tool names to include (only for agent
+            chatbot).
 
     Returns:
-        ChatbotInterface: An instance of the chatbot class configured with the specified model.
+        ChatbotInterface: An instance of the chatbot class configured
+            with the specified model.
 
     """
     model = _get_model(model_name)
     if chatbot_type == "plain":
         logger.info(f"Creating plain chatbot with model: {model_name}")
         return PlainChatbot(
-            model=model, prompt=get_detector_prompt(), schema=schema
+            model=model, prompt=get_detector_prompt(), schema=schema,
         )
     if chatbot_type == "agent":
         if vectorstore_collection_name is None:
@@ -108,7 +115,8 @@ def get_response(chatbot: ChatbotInterface, user_input: str) -> str | BaseModel:
     """Get a response from the chatbot for the given user input.
 
     Args:
-        chatbot (PlainChatbot): The PlainChatbot instance to use for generating the response.
+        chatbot (PlainChatbot): The PlainChatbot instance to use for
+            generating the response.
         user_input (str): The input message from the user.
 
     Returns:
@@ -118,11 +126,14 @@ def get_response(chatbot: ChatbotInterface, user_input: str) -> str | BaseModel:
     return chatbot.chat(user_input)
 
 
-def stream_response(chatbot: ChatbotInterface, user_input: str) -> Generator[str, None, None]:
+def stream_response(
+    chatbot: ChatbotInterface, user_input: str,
+) -> Generator[str, None, None]:
     """Stream the response from the chatbot word by word.
 
     Args:
-        chatbot (PlainChatbot): The PlainChatbot instance to use for generating the response.
+        chatbot (PlainChatbot): The PlainChatbot instance to use for
+            generating the response.
         user_input (str): The input message from the user.
 
     Yields:

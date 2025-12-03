@@ -1,14 +1,15 @@
-import json
+
+from langchain_core.messages import AIMessage
 
 from agents.agent_api import get_response
 from agents.chatbot.chatbot_interface import ChatbotInterface
-from evaluation.evaluator_interface import EvaluatorInterface
-from agents.models.detector_model import DetectorModel
-from evaluation.liar.liar_loader import LiarLoader
-from langchain_core.messages import AIMessage
 from agents.logger.logger import get_logger
+from agents.models.detector_model import DetectorModel
+from evaluation.evaluator_interface import EvaluatorInterface
+from evaluation.liar.liar_loader import LiarLoader
 
 logger = get_logger()
+
 
 class LiarEvaluator(EvaluatorInterface):
     """A class for the evaluation of a chatbot on the Liar Dataset."""
@@ -17,7 +18,8 @@ class LiarEvaluator(EvaluatorInterface):
         """Initialize the LiarEvaluator.
 
         Args:
-            chatbot (Chatbot): The chatbot to be evaluated
+            chatbot: The chatbot to be evaluated.
+            n: Number of samples to evaluate.
 
         """
         self.chatbot = chatbot
@@ -56,8 +58,8 @@ class LiarEvaluator(EvaluatorInterface):
 
                 if predicted_label == true_label:
                     correct += 1
-            except Exception as e:
-                logger.exception(f"Error during evaluation of sample {i}: {e}")
+            except Exception:
+                logger.exception(f"Error during evaluation of sample {i}")
                 continue
 
         accuracy = correct / total
@@ -73,3 +75,4 @@ class LiarEvaluator(EvaluatorInterface):
                 return "Unclear"
         msg = f"Unknown label: {label}"
         raise ValueError(msg)
+

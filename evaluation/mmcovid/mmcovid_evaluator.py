@@ -1,12 +1,12 @@
-import json
+
+from langchain_core.messages import AIMessage
 
 from agents.agent_api import get_response
 from agents.chatbot.chatbot_interface import ChatbotInterface
+from agents.logger.logger import get_logger
 from agents.models.detector_model import DetectorModel
 from evaluation.evaluator_interface import EvaluatorInterface
 from evaluation.mmcovid.mmcovid_loader import MMCovidLoader
-from langchain_core.messages import AIMessage
-from agents.logger.logger import get_logger
 
 logger = get_logger()
 
@@ -18,7 +18,8 @@ class MMCovidEvaluator(EvaluatorInterface):
         """Initialize the MMCovidEvaluator.
 
         Args:
-            chatbot (ChatbotInterface): The chatbot to be evaluated
+            chatbot: The chatbot to be evaluated.
+            n: Number of samples to evaluate.
 
         """
         self.chatbot = chatbot
@@ -56,8 +57,8 @@ class MMCovidEvaluator(EvaluatorInterface):
 
                 if predicted_label == true_label:
                     correct += 1
-            except Exception as e:
-                logger.exception(f"Error during evaluation of sample {i}: {e}")
+            except Exception:
+                logger.exception(f"Error during evaluation of sample {i}")
 
         accuracy = correct / total
         return {"accuracy": accuracy}
@@ -65,6 +66,7 @@ class MMCovidEvaluator(EvaluatorInterface):
     def _map_label(self, label: str) -> str:
         label_mapping = {
             "real": "True",
-            "fake": "False"
+            "fake": "False",
         }
         return label_mapping.get(label.lower(), "UNKNOWN")
+
