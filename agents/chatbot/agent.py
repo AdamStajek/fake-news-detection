@@ -2,6 +2,7 @@ import uuid
 from collections.abc import Generator
 
 from langchain.agents import create_agent
+from langchain.agents.structured_output import ToolStrategy
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import BaseMessage
 from langchain_core.messages.ai import AIMessageChunk
@@ -37,19 +38,33 @@ class AgentChatbot(ChatbotInterface):
         Defaults to a UUID.
 
        """
-       self.agent = create_agent(model,
-                                    system_prompt=prompt,
-                                    tools=tools,
-                                    response_format=schema,
-                                    checkpointer=InMemorySaver())
+       self.model = model
+       self.schema = schema
+       self.tools = tools  # Store tools for tool call handling
+       self.agent = create_agent(
+           model,
+           system_prompt=prompt,
+           tools=tools,
+           response_format=ToolStrategy(schema) if schema else None,
+           checkpointer=InMemorySaver(),
+       )
        self.id = id_
 
     def chat(self, user_input: str) -> BaseMessage:
-        logger.info(f"User input: {user_input}")
-        result = self.agent.invoke({"messages": [{"role": "user", "content": user_input}]})
-        output = result["messages"][-1]
-        logger.info(f"AgentChatbot response: {output.content}")
-        return output
+        retries = 3
+        for i in range(retries):
+            logger.info(f"User input: {user_input}")
+            result = self.agent.invoke({"messages": [{"role": "user", "content": user_input}]},
+                                    {"configurable": {"thread_id": self.id}},)
+            if self.schema:
+                output = result["structured_response"]
+            else:
+                output = result["messages"][-1].content
+            logger.info(f"AgentChatbot response: {output}")
+            if output:
+                return output
+        msg = "Failed to get response from agent after retries."
+        raise RuntimeError(msg)
 
 
     def stream_chat(self, user_input: str) -> Generator[str, None, None]:
@@ -71,9 +86,20 @@ class AgentChatbot(ChatbotInterface):
             {"configurable": {"thread_id": self.id}},
             stream_mode="messages",
         ):
-            logger.info(f"AgentChatbot streaming step: {step[0].content}")
-            logger.info(f"step: {type(step)}")
             if isinstance(step[0], AIMessageChunk):
-                yield step[0].content
+                if step[0].tool_calls or step[0].tool_call_chunks:
+                    continue
+
+                content = step[0].content
+                if isinstance(content, str) and content:
+                    yield content
+                elif isinstance(content, list):
+                    for block in content:
+                        if isinstance(block, dict):
+                            if block.get("type") == "text" and block.get("text"):
+                                yield block["text"]
+                        elif hasattr(block, "type") and block.type == "text":
+                            if hasattr(block, "text") and block.text:
+                                yield block.text
 
 

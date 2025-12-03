@@ -95,8 +95,12 @@ class PlainChatbot(ChatbotInterface):
         """
         logger.info(f"User input: {user_input}")
         input_message = [HumanMessage(user_input)]
-        output = self.app.invoke({"messages": input_message}, self.config)
-        output = output["messages"][-1]
+        for _ in range(3):
+            output = self.app.invoke({"messages": input_message}, self.config)
+            output = output["messages"][-1]
+            if output and output.content is not None:
+                break
+            logger.warning("Empty response from model, retrying...")
         logger.info(f"PlainChatbot response: {output.content}")
         return output
 

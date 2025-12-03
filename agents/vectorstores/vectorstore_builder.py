@@ -4,11 +4,14 @@ import os
 from langchain_community.document_loaders import TextLoader
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from tqdm import tqdm
 
+from agents.logger.logger import get_logger
 from agents.settings import get_settings
 from agents.vectorstores.vectorstore import Vectorstore
 
 settings = get_settings()
+logger = get_logger()
 
 class VectorstoreBuilder:
     """Class to build and populate the vectorstore with documents from a specified directory."""
@@ -32,7 +35,8 @@ class VectorstoreBuilder:
         """Build and populate the vectorstore with documents from the specified directory."""
         docs = self._load_docs()
         docs_slices = self._split_into_slices(docs, max_len=5000)
-        for docs in docs_slices:
+        logger.info(f"Adding {len(docs)} documents to vectorstore.")
+        for docs in tqdm(docs_slices):
             self.vectorstore.add_documents(docs)
 
     def _load_docs(self) -> list[Document]:
