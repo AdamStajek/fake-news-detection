@@ -2,14 +2,19 @@ import json
 
 from agents.agent_api import get_response
 from agents.chatbot.chatbot_interface import ChatbotInterface
+from agents.models.detector_model import DetectorModel
 from evaluation.evaluator_interface import EvaluatorInterface
 from evaluation.mmcovid.mmcovid_loader import MMCovidLoader
+from langchain_core.messages import AIMessage
+from agents.logger.logger import get_logger
+
+logger = get_logger()
 
 
 class MMCovidEvaluator(EvaluatorInterface):
     """A class for the evaluation of a chatbot on the MMCovid Dataset."""
 
-    def __init__(self, chatbot: ChatbotInterface, n: int = 10) -> None:
+    def __init__(self, chatbot: ChatbotInterface, n: int = 20) -> None:
         """Initialize the MMCovidEvaluator.
 
         Args:
@@ -31,12 +36,35 @@ class MMCovidEvaluator(EvaluatorInterface):
         total = len(self.dataset)
 
         for i in range(total):
-            claim, true_label = self.dataset[i]
-            response = get_response(self.chatbot, claim)
-            predicted_label = json.loads(response).get("label")
+            try:
+                claim, true_label = self.dataset[i]
+                true_label = self._map_label(true_label)
+                response = get_response(self.chatbot, claim)
+                if not response:
+                    logger.info("No response received from chatbot.")
+                    continue
+                if isinstance(response, AIMessage):
+                    response = response.content
+                    if not response:
+                        logger.info("No response content received from chatbot.")
+                        continue
+                if not isinstance(response, DetectorModel):
+                    response = DetectorModel.parse_raw(response)
+                predicted_label = response.label
 
-            if predicted_label == true_label:
-                correct += 1
+                logger.info(f"Predicted: {predicted_label}, True: {true_label}")
+
+                if predicted_label == true_label:
+                    correct += 1
+            except Exception as e:
+                logger.exception(f"Error during evaluation of sample {i}: {e}")
 
         accuracy = correct / total
         return {"accuracy": accuracy}
+
+    def _map_label(self, label: str) -> str:
+        label_mapping = {
+            "real": "True",
+            "fake": "False"
+        }
+        return label_mapping.get(label.lower(), "UNKNOWN")

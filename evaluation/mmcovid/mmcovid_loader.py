@@ -5,7 +5,7 @@ import pandas as pd
 
 from evaluation.fake_news_dataset import FakeNewsDataset
 
-DATASET_PATH = Path(__file__).parent / "data" / "mmcovid"
+DATASET_PATH = Path(__file__).parent.parent / "data" / "mmcovid" / "english_news.csv"
 
 class MMCovidLoader(FakeNewsDataset):
     """MMCovid Dataset Loader - Loads the MMCovid Fake News Dataset(https://github.com/bigheiniu/MM-COVID).
@@ -13,7 +13,8 @@ class MMCovidLoader(FakeNewsDataset):
     The MMCovid dataset contains claims about Covid19.
     """
 
-    def __init__(self, n: int, split: Literal["train", "validation"] = "train") -> None:
+    def __init__(self, n: int, split: Literal["train", "validation"] = "train", 
+                 random=True) -> None:
         """Create an MMCovidLoader instance.
 
         Args:
@@ -22,7 +23,10 @@ class MMCovidLoader(FakeNewsDataset):
 
         """
         dataset = pd.read_csv(DATASET_PATH)[["claim", "label"]]
-        dataset = dataset[:n]
+        if random:
+            dataset = dataset.sample(n=n, random_state=42).reset_index(drop=True)
+        else:
+            dataset = dataset.head(n)
         self.dataset = self._split_dataset(dataset, split)
 
     def __len__(self) -> int:
@@ -34,7 +38,7 @@ class MMCovidLoader(FakeNewsDataset):
         """
         return len(self.dataset)
 
-    def __getitem__(self, idx: int) -> tuple[str, int]:
+    def __getitem__(self, idx: int) -> tuple[str, str]:
         """Get an item from the dataset by index.
 
         Args:
