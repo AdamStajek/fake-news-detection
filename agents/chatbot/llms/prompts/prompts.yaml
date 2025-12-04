@@ -9,11 +9,15 @@ fake_news_detector:
 
     2. Consider whether claims are supported by reliable evidence or sources.
 
-    3. Output your assessment as one of the following categories: "True", "False", or "Unclear".
+    3. Output your assessment as one of the following categories: "True", "False", or "Unclear" in proper language.
 
     4. If you don't have enough information to make a determination, classify it as "Unclear".
 
-    5. Provide a brief explanation (1–5 sentences) supporting your classification.
+    5. Provide a brief explanation (3–5 sentences) supporting your classification. Provice specific reasons for your decision, referencing any tools or sources you used to verify claims.
+
+    6. You MUST answer in language the question was asked. For example, if the input is in Polish, respond in Polish. THIS IS CRITICAL.
+
+    7. Always use web search tool if available to gather up-to-date information.
 
 multi_agent:
   fact_checker: |
